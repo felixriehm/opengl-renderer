@@ -21,14 +21,11 @@ link_directories(lib/glew/lib/x64
 # for specific target use target_link_libraries(target_name lib_name)
 link_libraries(opengl32.lib
         glew32.lib
-        glfw3.lib
-        user32.lib
-        gdi32.lib
-        shell32.lib
-        vcruntime.lib
-        msvcrt.lib)
+        glfw3.lib)
 
-file(GLOB SOURCE_FILES src/*.cpp src/view/*.cpp lib/stb_image/src/*.cpp lib/imgui/src/*.cpp)
+file(GLOB SOURCE_FILES src/*.cpp src/view/*.cpp src/shader/*.cpp lib/stb_image/src/*.cpp lib/imgui/src/*.cpp)
+
+#add_compile_options(/E ${SOURCE_FILES})
 
 ## for console to disappear at start change to add_executable(opengl_renderer WIN32 ${SOURCE_FILES})
 add_executable(opengl_renderer ${SOURCE_FILES})

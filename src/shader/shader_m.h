@@ -31,13 +31,9 @@ public:
         gShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         try 
         {
-
-            std::cout << "Before Open" << std::endl;
-            std::cout << vertexPath << std::endl;
             // open files
             vShaderFile.open(vertexPath);
             fShaderFile.open(fragmentPath);
-            std::cout << "After Open" << std::endl;
             std::stringstream vShaderStream, fShaderStream;
             // read file's buffer contents into streams
             vShaderStream << vShaderFile.rdbuf();

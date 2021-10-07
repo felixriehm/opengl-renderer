@@ -1,20 +1,12 @@
 #include <windows.h>
-
-#include <stb_image.h>
-
-#include <shader/shader_m.h>
-#include <utility/filesystem.h>
 #include <view/Gui.h>
-
-#include <iostream>
-#include <cmath>
 
 
 
 int main()
 {
     try{
-        View::Gui();
+        View::Gui().Run();
     } catch (...) {
         return -1;
     }

@@ -17,9 +17,7 @@ namespace View {
             void Init();
             void RenderImGui();
             void Cleanup();
-        void RenderDrawData();
-
-        void ConfigureImgui();
+            void RenderDrawData();
     };
 }
 

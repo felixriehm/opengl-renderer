@@ -1,20 +1,21 @@
 //
 // Created by Felix on 24/09/2021.
 //
-
 #include "Gui.h"
-#include "GLFWWrapper.h"
+#include <view/GLFWWrapper.h>
 #include <view/ImGuiWrapper.h>
-#include "OpenGLWrapper.h"
+#include <view/OpenGLWrapper.h>
+
 #include <excpetions/GLFWException.h>
 #include <excpetions/GLEWException.h>
 #include <iostream>
+#include <vector>
 
 using namespace View;
 
 void Gui::Run() {
     GLFWWrapper* glfwWrapper = new GLFWWrapper();
-    OpenGLWrapper* openGl = new OpenGLWrapper();
+    OpenGLWrapper* openGl = new OpenGLWrapper(glfwWrapper);
     ImGuiWrapper* imGuiWrapper = new ImGuiWrapper(glfwWrapper, openGl);
 
     try {
@@ -35,7 +36,7 @@ void Gui::Run() {
 
     // load vertices
     {
-        float vertices[] = {
+        const std::vector<float> vertices {
                 -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
                 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
                 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -81,9 +82,8 @@ void Gui::Run() {
         openGl->SetupVerticeData(vertices);
     }
 
-    openGl->LoadAndCreateTextures((std::string []){ "assets/textures/container.jpg", "assets/textures/awesomeface.png"});
-
-    imGuiWrapper->ConfigureImgui();
+    std::string texturePaths[2] = {"assets/textures/container.jpg", "assets/textures/awesomeface.png"};
+    openGl->LoadAndCreateTextures(texturePaths);
 
     // render loop
     // -----------

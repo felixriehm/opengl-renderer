@@ -3,14 +3,21 @@
 //
 
 #include <glew/glew.h>
+#include <shader/ShaderManager.h>
 #include <view/OpenGLWrapper.h>
 #include <excpetions/GLEWException.h>
+#include <utility/filesystem.h>
+#include <stb_image.h>
 #include <iostream>
 #include <stdlib.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace View;
+
+OpenGLWrapper::OpenGLWrapper(GLFWWrapper* glfwWrapper){
+    this->glfwWrapper = glfwWrapper;
+}
 
 void OpenGLWrapper::Init() {
     // glad: load all OpenGLWrapper function pointers
@@ -36,20 +43,19 @@ void OpenGLWrapper::Init() {
 void OpenGLWrapper::BuildAndCompileShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath) {
     // build and compile our shader zprogram
     // ------------------------------------
-    this->ShaderProgram = new Shader(FileSystem::getPath(vertexShaderPath).c_str(), FileSystem::getPath(fragmentShaderPath).c_str());
+    ShaderManager::CreateShader(FileSystem::getPath(vertexShaderPath).c_str(), FileSystem::getPath(fragmentShaderPath).c_str());
 }
 
-void OpenGLWrapper::SetupVerticeData(float vertices[]) {
+void OpenGLWrapper::SetupVerticeData(std::vector<float> vertices) {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-    unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
     glBindVertexArray(VAO);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     // position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -113,9 +119,10 @@ void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
 
     // tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
     // -------------------------------------------------------------------------------------------
-    this->ShaderProgram->use();
-    this->ShaderProgram->setInt("texture1", 0);
-    this->ShaderProgram->setInt("texture2", 1);
+    Shader s = ShaderManager::GetShader(0);
+    s.use();
+    s.setInt("texture1", 0);
+    s.setInt("texture2", 1);
 
     // bind textures on corresponding texture units
     glActiveTexture(GL_TEXTURE0);
@@ -135,7 +142,7 @@ glm::vec4 OpenGLWrapper::GetClearColor() {
 
 void OpenGLWrapper::CreateTransformations(){
     // activate shader
-    this->ShaderProgram->use();
+    ShaderManager::GetShader(0).use();
 
     // create transformations
     glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
@@ -143,15 +150,15 @@ void OpenGLWrapper::CreateTransformations(){
     glm::mat4 projection    = glm::mat4(1.0f);
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
     view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+    projection = glm::perspective(glm::radians(45.0f), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
     // retrieve the matrix uniform locations
-    unsigned int modelLoc = glGetUniformLocation(ourShader.ID, "model");
-    unsigned int viewLoc  = glGetUniformLocation(ourShader.ID, "view");
+    unsigned int modelLoc = glGetUniformLocation(ShaderManager::GetShader(0).ID, "model");
+    unsigned int viewLoc  = glGetUniformLocation(ShaderManager::GetShader(0).ID, "view");
     // pass them to the shaders (3 different ways)
     glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
     // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-    this->ShaderProgram->setMat4("projection", projection);
+    ShaderManager::GetShader(0).setMat4("projection", projection);
 }
 
 
@@ -166,7 +173,7 @@ void OpenGLWrapper::FramebufferSizeCallback(GLFWwindow* window, int width, int h
 
 void OpenGLWrapper::Draw() {
     // render box
-    //glBindVertexArray(VAO);
+    glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
