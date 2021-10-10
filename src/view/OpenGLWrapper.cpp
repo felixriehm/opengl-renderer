@@ -15,8 +15,9 @@
 
 using namespace View;
 
-OpenGLWrapper::OpenGLWrapper(GLFWWrapper* glfwWrapper){
+OpenGLWrapper::OpenGLWrapper(GLFWWrapper* glfwWrapper, Camera* camera){
     this->glfwWrapper = glfwWrapper;
+    this->camera = camera;
 }
 
 void OpenGLWrapper::Init() {
@@ -68,17 +69,15 @@ void OpenGLWrapper::SetupVerticeData(std::vector<float> vertices) {
 void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
     // load and create a texture
     // -------------------------
-    unsigned int texture1, texture2;
+
     // texture 1
     // ---------
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    glGenTextures(1, &textures[0]);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
     // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    SetTextureWrapping(0, textures[0]);
     // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SetTextureFiltering(0, textures[0]);
     // load image, create texture and generate mipmaps
     int width, height, nrChannels;
     stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
@@ -95,14 +94,12 @@ void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
     stbi_image_free(data);
     // texture 2
     // ---------
-    glGenTextures(1, &texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
+    glGenTextures(1, &textures[1]);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
     // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    SetTextureWrapping(0, textures[1]);
     // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    SetTextureFiltering(0, textures[1]);
     // load image, create texture and generate mipmaps
     data = stbi_load(FileSystem::getPath(texturePaths[1]).c_str(), &width, &height, &nrChannels, 0);
     if (data)
@@ -126,9 +123,9 @@ void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
 
     // bind textures on corresponding texture units
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture2);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
 }
 
 void OpenGLWrapper::ClearCanvas() {
@@ -142,23 +139,19 @@ glm::vec4 OpenGLWrapper::GetClearColor() {
 
 void OpenGLWrapper::CreateTransformations(){
     // activate shader
-    ShaderManager::GetShader(0).use();
+    Shader shader = ShaderManager::GetShader(0);
+    shader.use();
 
     // create transformations
     glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
-    // retrieve the matrix uniform locations
-    unsigned int modelLoc = glGetUniformLocation(ShaderManager::GetShader(0).ID, "model");
-    unsigned int viewLoc  = glGetUniformLocation(ShaderManager::GetShader(0).ID, "view");
-    // pass them to the shaders (3 different ways)
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-    // note: currently we set the projection matrix each frame, but since the projection matrix rarely changes it's often best practice to set it outside the main loop only once.
-    ShaderManager::GetShader(0).setMat4("projection", projection);
+    view  = camera->GetViewMatrix();
+    projection = glm::perspective(glm::radians(camera->Zoom), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
+    shader.setMat4("projection", projection);
+    shader.setMat4("view", view);
+    shader.setMat4("model", model);
 }
 
 
@@ -182,4 +175,72 @@ void OpenGLWrapper::Cleanup() {
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+}
+
+void OpenGLWrapper::SetTextureWrapping(int i, int texture) {
+
+    auto setTextureWrapping = [](int i)
+    {
+        switch (i) {
+            case 0:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+                break;
+            case 1:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+                break;
+            case 2:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                break;
+            case 3:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+                break;
+            default:
+                break;
+        }
+    };
+
+    if(texture == -1){
+        for (int j = 0; j < 2; ++j) {
+            glBindTexture(GL_TEXTURE_2D, textures[j]);
+            setTextureWrapping(i);
+        }
+    }else {
+        glBindTexture(GL_TEXTURE_2D, texture);
+        setTextureWrapping(i);
+    }
+
+
+}
+
+void OpenGLWrapper::SetTextureFiltering(int i, int texture) {
+
+    auto setTextureFiltering = [](int i)
+    {
+        switch (i) {
+            case 0:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                break;
+            case 1:
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                break;
+            default:
+                break;
+        }
+    };
+
+    if(texture == -1){
+        for (int j = 0; j < 2; ++j) {
+            glBindTexture(GL_TEXTURE_2D, textures[j]);
+            setTextureFiltering(i);
+        }
+    }else {
+        glBindTexture(GL_TEXTURE_2D, texture);
+        setTextureFiltering(i);
+    }
 }

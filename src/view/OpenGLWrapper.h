@@ -8,11 +8,12 @@
 #include <glm/glm.hpp>
 #include <iostream>
 #include <vector>
+#include <camera/Camera.h>
 
 namespace View {
     class OpenGLWrapper {
         public:
-            OpenGLWrapper(GLFWWrapper* glfwWrapper);
+            OpenGLWrapper(View::GLFWWrapper* glfwWrapper, Camera* camera);
             void Init();
             void BuildAndCompileShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
             void SetupVerticeData(std::vector<float> vertices);
@@ -22,13 +23,18 @@ namespace View {
             void ClearCanvas();
             glm::vec4 GetClearColor();
             void Cleanup();
+            void Draw();
 
-        void Draw();
+        void SetTextureWrapping(int i, int texture = -1);
+
+        void SetTextureFiltering(int i, int texture = -1);
 
     private:
             GLFWWrapper* glfwWrapper;
+            Camera* camera;
             glm::vec4 ClearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
             unsigned int VBO, VAO;
+            unsigned int textures[2] = {};
     };
 }
 

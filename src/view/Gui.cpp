@@ -10,19 +10,24 @@
 #include <excpetions/GLEWException.h>
 #include <iostream>
 #include <vector>
+#include <camera/Camera.h>
+#include <user_input/UserInput.h>
 
 using namespace View;
 
 void Gui::Run() {
     GLFWWrapper* glfwWrapper = new GLFWWrapper();
-    OpenGLWrapper* openGl = new OpenGLWrapper(glfwWrapper);
+    Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+    OpenGLWrapper* openGl = new OpenGLWrapper(glfwWrapper, camera);
     ImGuiWrapper* imGuiWrapper = new ImGuiWrapper(glfwWrapper, openGl);
+    UserInput* userInput = new UserInput(glfwWrapper, camera, imGuiWrapper);
 
     try {
         glfwWrapper->Init();
         glfwWrapper->CreateWindow();
         openGl->Init();
         imGuiWrapper->Init();
+        userInput->Init();
     } catch (const Exception::GLFWException& e) {
         std::cout << "GLFW exception: " << e.what() << std::endl;
         throw;
@@ -89,17 +94,19 @@ void Gui::Run() {
     // -----------
     while (!glfwWrapper->ShouldWindowClose())
     {
-        glfwWrapper->ProcessInput();
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-        imGuiWrapper->RenderImGui();
+        glfwWrapper->ProcessInput(deltaTime);
 
         openGl->ClearCanvas();
-
-        imGuiWrapper->RenderDrawData();
 
         openGl->CreateTransformations();
 
         openGl->Draw();
+
+        imGuiWrapper->RenderImGui();
 
         glfwWrapper->SwapBuffersAndPollIOEvents();
     }
