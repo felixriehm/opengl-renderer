@@ -24,10 +24,14 @@ namespace View {
             glm::vec4 GetClearColor();
             void Cleanup();
             void Draw();
+            void RotateObject(bool rotate);
 
         void SetTextureWrapping(int i, int texture = -1);
 
         void SetTextureFiltering(int i, int texture = -1);
+
+        void ScaleTextCoord(int axis, float scale);
+        void SetTextureWrappingBorderColor(float *borderColor);
 
     private:
             GLFWWrapper* glfwWrapper;
@@ -35,6 +39,7 @@ namespace View {
             glm::vec4 ClearColor = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
             unsigned int VBO, VAO;
             unsigned int textures[2] = {};
+            bool rotateObject = true;
     };
 }
 

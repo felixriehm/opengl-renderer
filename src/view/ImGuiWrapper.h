@@ -15,6 +15,11 @@ namespace View {
             OpenGLWrapper* openGlWrapper;
             void ShowTextureSettings(bool* p_open);
             void ShowExampleAppSimpleOverlay(bool* p_open);
+            void ShowTransformSettings(bool* p_open);
+            void HelpMarker(const char* desc);
+            bool showTransformSettings = false;
+            bool showTextureSettings = false;
+            bool showExampleAppSimpleOverlay = true;
         public:
             ImGuiWrapper(GLFWWrapper* glfwWrapper, OpenGLWrapper* openGlWrapper);
             bool WantCaptureMouse();
@@ -22,6 +27,8 @@ namespace View {
             void Init();
             void RenderImGui();
             void Cleanup();
+
+        void ShowMainMenuBar();
     };
 }
 

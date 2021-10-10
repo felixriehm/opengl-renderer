@@ -120,6 +120,8 @@ void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
     s.use();
     s.setInt("texture1", 0);
     s.setInt("texture2", 1);
+    s.setFloat("xTextCoordScale", 1.0);
+    s.setFloat("yTextCoordScale", 1.0);
 
     // bind textures on corresponding texture units
     glActiveTexture(GL_TEXTURE0);
@@ -146,7 +148,9 @@ void OpenGLWrapper::CreateTransformations(){
     glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
-    model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+    if(rotateObject){
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+    }
     view  = camera->GetViewMatrix();
     projection = glm::perspective(glm::radians(camera->Zoom), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
     shader.setMat4("projection", projection);
@@ -154,6 +158,9 @@ void OpenGLWrapper::CreateTransformations(){
     shader.setMat4("model", model);
 }
 
+void OpenGLWrapper::RotateObject(bool rotate) {
+    rotateObject = rotate;
+}
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
@@ -214,6 +221,26 @@ void OpenGLWrapper::SetTextureWrapping(int i, int texture) {
     }
 
 
+}
+
+void OpenGLWrapper::ScaleTextCoord(int axis, float scale){
+    Shader s = ShaderManager::GetShader(0);
+    s.use();
+
+    if(axis == 0) {
+        // x axis
+        s.setFloat("xTextCoordScale", scale);
+    } else {
+        // y axis
+        s.setFloat("yTextCoordScale", scale);
+    }
+}
+
+void OpenGLWrapper::SetTextureWrappingBorderColor(float borderColor[]){
+    for (int j = 0; j < 2; ++j) {
+        glBindTexture(GL_TEXTURE_2D, textures[j]);
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    }
 }
 
 void OpenGLWrapper::SetTextureFiltering(int i, int texture) {
