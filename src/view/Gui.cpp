@@ -102,7 +102,7 @@ void Gui::Run() {
 
         openGl->ClearCanvas();
 
-        openGl->CreateTransformations();
+        openGl->CreateTransformations(deltaTime);
 
         openGl->Draw();
 

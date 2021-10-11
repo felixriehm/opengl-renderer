@@ -22,7 +22,7 @@ void UserInput::Init(){
 }
 
 void UserInput::OnKeyPressed(int key, float deltaTime) {
-    if(!glfwWrapper->IsCursorShown()){
+    if(cameraMode){
         switch (key) {
             case GLFW_KEY_W:
                 camera->ProcessMovement(FORWARD, deltaTime);
@@ -42,9 +42,6 @@ void UserInput::OnKeyPressed(int key, float deltaTime) {
             case GLFW_KEY_Q:
                 camera->ProcessMovement(DOWN, deltaTime);
                 break;
-            case GLFW_KEY_ESCAPE:
-                glfwWrapper->ShowCursor(true);
-                break;
             default:
                 break;
         }
@@ -52,7 +49,7 @@ void UserInput::OnKeyPressed(int key, float deltaTime) {
 }
 
 void UserInput::OnMouseChanged(double xpos, double ypos) {
-    if(!glfwWrapper->IsCursorShown()) {
+    if(cameraMode) {
         if (firstMouse)
         {
             lastX = xpos;
@@ -70,7 +67,7 @@ void UserInput::OnMouseChanged(double xpos, double ypos) {
     }
 }
 void UserInput::OnMouseScrollChanged(double xoffset, double yoffset) {
-    if(!glfwWrapper->IsCursorShown()) {
+    if(cameraMode) {
         camera->ProcessMouseScroll(yoffset);
     }
 }
@@ -78,7 +75,15 @@ void UserInput::OnMouseScrollChanged(double xoffset, double yoffset) {
 void UserInput::OnMouseButton(int button, int action, int mods){
     if(!imGuiWrapper->WantCaptureMouse()){
         // click inside im gui does not trigger events for the main window
-        firstMouse = true;
-        glfwWrapper->ShowCursor(false);
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS){
+            glfwWrapper->ShowCursor(false);
+            cameraMode = true;
+        }
+
+        if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE){
+            firstMouse = true;
+            cameraMode = false;
+            glfwWrapper->ShowCursor(true);
+        }
     }
 }

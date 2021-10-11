@@ -18,13 +18,16 @@ namespace View {
             void BuildAndCompileShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath);
             void SetupVerticeData(std::vector<float> vertices);
             void LoadAndCreateTextures(std::string texturePaths[]);
-            void CreateTransformations();
+            void CreateTransformations(float deltaTIme);
             static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
             void ClearCanvas();
             glm::vec4 GetClearColor();
             void Cleanup();
             void Draw();
-            void RotateObject(bool rotate);
+            void AutoRotateObject(bool rotate);
+            void RotateObject(int axis, float angle);
+        void TranslateObject(int axis, float position);
+        void ScaleObject(int axis, float scale);
 
         void SetTextureWrapping(int i, int texture = -1);
 
@@ -40,6 +43,7 @@ namespace View {
             unsigned int VBO, VAO;
             unsigned int textures[2] = {};
             bool rotateObject = true;
+            glm::mat4 model = glm::mat4(1.0f);
     };
 }
 

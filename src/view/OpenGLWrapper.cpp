@@ -139,17 +139,16 @@ glm::vec4 OpenGLWrapper::GetClearColor() {
     return this->ClearColor;
 }
 
-void OpenGLWrapper::CreateTransformations(){
+void OpenGLWrapper::CreateTransformations(float deltaTime){
     // activate shader
     Shader shader = ShaderManager::GetShader(0);
     shader.use();
 
     // create transformations
-    glm::mat4 model         = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
     glm::mat4 view          = glm::mat4(1.0f);
     glm::mat4 projection    = glm::mat4(1.0f);
     if(rotateObject){
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(40.0f*deltaTime), glm::vec3(0.5f, 1.0f, 0.0f));
     }
     view  = camera->GetViewMatrix();
     projection = glm::perspective(glm::radians(camera->Zoom), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
@@ -158,9 +157,59 @@ void OpenGLWrapper::CreateTransformations(){
     shader.setMat4("model", model);
 }
 
-void OpenGLWrapper::RotateObject(bool rotate) {
+void OpenGLWrapper::AutoRotateObject(bool rotate) {
     rotateObject = rotate;
 }
+
+void OpenGLWrapper::RotateObject(int axis, float angle) {
+    switch (axis) {
+        case 0:
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+            break;
+        case 1:
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 1.0f, 0.0f));
+            break;
+        case 2:
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+            break;
+        default:
+            break;
+    }
+}
+
+void OpenGLWrapper::TranslateObject(int axis, float translate) {
+    switch (axis) {
+        case 0:
+            model = glm::translate(model, glm::vec3(translate,0.0f,0.0f));
+            break;
+        case 1:
+            model = glm::translate(model, glm::vec3(0.0f,translate,0.0f));
+            break;
+        case 2:
+            model = glm::translate(model, glm::vec3(0.0f,0.0f,translate));
+            break;
+        default:
+            break;
+    }
+}
+
+void OpenGLWrapper::ScaleObject(int axis, float scale) {
+    switch (axis) {
+        case 0:
+            model = glm::scale(model, glm::vec3(scale,1.0f,1.0f));
+            break;
+        case 1:
+            model = glm::scale(model, glm::vec3(1.0f,scale,1.0f));
+            break;
+        case 2:
+            model = glm::scale(model, glm::vec3(1.0f,1.0f,scale));
+            break;
+        default:
+            break;
+    }
+}
+
+
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------

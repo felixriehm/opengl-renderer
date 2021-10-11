@@ -26,7 +26,6 @@ namespace View {
             boost::signals2::signal<void (int, int, int)>* OnMouseButton();
             boost::signals2::signal<void (double, double)>* OnMouseChanged();
             boost::signals2::signal<void (double, double)>* OnMouseScrollChanged();
-            bool IsCursorShown();
         private:
             // settings
             unsigned int ScreenWidth = 2400;
@@ -42,7 +41,6 @@ namespace View {
             boost::signals2::signal<void (int, int, int)>* onMouseButton;
             boost::signals2::signal<void (double, double)>* onMouseChanged;
             boost::signals2::signal<void (double, double)>* onMouseScrollChanged;
-            bool isCursorShown;
     };
 }
 

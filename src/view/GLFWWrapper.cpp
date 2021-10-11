@@ -58,10 +58,6 @@ bool GLFWWrapper::ShouldWindowClose() {
     return glfwWindowShouldClose(window);
 }
 
-bool GLFWWrapper::IsCursorShown(){
-    return isCursorShown;
-}
-
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void GLFWWrapper::ProcessInput(float deltaTime) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -97,13 +93,11 @@ void GLFWWrapper::ScrollCallback(GLFWwindow* window, double xoffset, double yoff
 
 void GLFWWrapper::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        (*thisObject->onMouseButton)(button, action, mods);
+    (*thisObject->onMouseButton)(button, action, mods);
 }
 
 void GLFWWrapper::ShowCursor(bool show){
     show ? glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL) : glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    isCursorShown = show;
 }
 
 void GLFWWrapper::WindowShouldClose(){

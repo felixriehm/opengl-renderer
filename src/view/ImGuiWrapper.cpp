@@ -59,7 +59,7 @@ void ImGuiWrapper::RenderImGui() {
 
 void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SetNextWindowSize(ImVec2(700, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Transform", p_open))
+    if (!ImGui::Begin("Transform (Local space)", p_open))
     {
         ImGui::End();
         return;
@@ -73,9 +73,123 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     }
 
     static bool rotate = true;
-    if(ImGui::Checkbox("Rotate object", &rotate)){
-        openGlWrapper->RotateObject(rotate);
+    if(ImGui::Checkbox("Auto rotate object", &rotate)){
+        openGlWrapper->AutoRotateObject(rotate);
     }
+
+    ImGui::Spacing();
+
+    ImGui::Text("Translate");
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("x:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float counter = 0;
+    float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+    ImGui::PushButtonRepeat(true);
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(0, -0.05f); counter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(0, 0.05); counter += 0.05f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", counter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("y:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float ycounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(1, -0.05f); ycounter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(1, 0.05); ycounter += 0.05f; };
+    ImGui::SameLine();
+    ImGui::Text("%.2f", ycounter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("z:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float zcounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(2, -0.05f); zcounter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(2, 0.05); zcounter += 0.05f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", zcounter);
+
+    ImGui::Spacing();
+
+    ImGui::Text("Rotate");
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("x:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float rxcounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(0, -1.0f); rxcounter -= 1.0f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(0, 1.0f); rxcounter += 1.0f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", rxcounter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("y:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float yrcounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(1, -1.0f); yrcounter -= 1.0f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(1, 1.0f); yrcounter += 1.0f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", yrcounter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("z:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float zrcounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(2, -1.0f); zrcounter -= 1.0f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(2, 1.0f); zrcounter += 1.0f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", zrcounter);
+
+    ImGui::Spacing();
+
+    ImGui::Text("Scale");
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("x:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float sxcounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(0, 0.95f); sxcounter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(0, 1.05); sxcounter += 0.05f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", sxcounter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("y:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float yscounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(1, 0.95f); yscounter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(1, 1.05); yscounter += 0.05f; }
+    ImGui::SameLine();
+    ImGui::Text("%.2f", yscounter);
+
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("z:");
+    ImGui::SameLine();
+    // Arrow buttons with Repeater
+    static float zscounter = 0;
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(2, 0.95f); zscounter -= 0.05f; }
+    ImGui::SameLine(0.0f, spacing);
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(2, 1.05); zscounter += 0.05f; }
+    ImGui::PopButtonRepeat();
+    ImGui::SameLine();
+    ImGui::Text("%.2f", zscounter);
 
     ImGui::End();
 }
@@ -208,7 +322,7 @@ void ImGuiWrapper::ShowExampleAppSimpleOverlay(bool* p_open)
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("Info:", p_open, window_flags))
     {
-        ImGui::Text("Click inside the scene to control the camera with 'WASD/QE'.\n" "Press 'ESC' to leave the camera mode.\n" "(right-click this window to change position)");
+        ImGui::Text("Right click and hold inside the scene\n" "to control the camera with 'WASD/QE'.\n" "(right-click this window to change position)");
         ImGui::Separator();
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Separator();

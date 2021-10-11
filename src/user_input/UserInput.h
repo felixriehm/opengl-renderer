@@ -25,6 +25,7 @@ class UserInput {
         float lastX;
         float lastY;
         bool firstMouse = true;
+        bool cameraMode = false;
 };
 
 
