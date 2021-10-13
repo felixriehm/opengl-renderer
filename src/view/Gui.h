@@ -12,8 +12,6 @@ namespace View {
         public:
             void Run();
         private:
-            const std::string VertexShaderPath = "src/shader/main.vs";
-            const std::string FragmentShaderPath = "src/shader/main.fs";
             float deltaTime = 0.0f;
             float lastFrame = 0.0f;
     };

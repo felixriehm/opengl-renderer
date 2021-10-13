@@ -41,15 +41,18 @@ void OpenGLWrapper::Init() {
     glEnable(GL_DEPTH_TEST);
 }
 
-void OpenGLWrapper::BuildAndCompileShaderProgram(std::string vertexShaderPath, std::string fragmentShaderPath) {
+void OpenGLWrapper::BuildAndCompileShaderProgram(std::vector<std::string> vertexShaderPath, std::vector<std::string> fragmentShaderPath) {
     // build and compile our shader zprogram
     // ------------------------------------
-    ShaderManager::CreateShader(FileSystem::getPath(vertexShaderPath).c_str(), FileSystem::getPath(fragmentShaderPath).c_str());
+    for (int i = 0; i <vertexShaderPath.size(); ++i) {
+        ShaderManager::CreateShader(FileSystem::getPath(vertexShaderPath.at(i)).c_str(), FileSystem::getPath(fragmentShaderPath.at(i)).c_str());
+    }
 }
 
 void OpenGLWrapper::SetupVerticeData(std::vector<float> vertices) {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+    /*** Other cube ***/
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
@@ -59,11 +62,23 @@ void OpenGLWrapper::SetupVerticeData(std::vector<float> vertices) {
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // texture coord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    /*** Light cube ***/
+    glGenVertexArrays(1, &lightCubeVAO);
+    glBindVertexArray(lightCubeVAO);
+
+    // we only need to bind to the VBO (to link it with glVertexAttribPointer), no need to fill it; the VBO's data already contains all we need (it's already bound, but we do it again for educational purposes)
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 }
 
 void OpenGLWrapper::LoadAndCreateTextures(std::string texturePaths[]){
@@ -140,21 +155,41 @@ glm::vec4 OpenGLWrapper::GetClearColor() {
 }
 
 void OpenGLWrapper::CreateTransformations(float deltaTime){
+    glm::mat4 view          = glm::mat4(1.0f);
+    view  = camera->GetViewMatrix();
+
+    glm::mat4 projection    = glm::mat4(1.0f);
+    projection = glm::perspective(glm::radians(camera->Zoom), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
+
+    /*** other cube ***/
     // activate shader
     Shader shader = ShaderManager::GetShader(0);
     shader.use();
 
     // create transformations
-    glm::mat4 view          = glm::mat4(1.0f);
-    glm::mat4 projection    = glm::mat4(1.0f);
     if(rotateObject){
         model = glm::rotate(model, glm::radians(40.0f*deltaTime), glm::vec3(0.5f, 1.0f, 0.0f));
     }
-    view  = camera->GetViewMatrix();
-    projection = glm::perspective(glm::radians(camera->Zoom), (float)this->glfwWrapper->GetScreenDimensions().x / (float)this->glfwWrapper->GetScreenDimensions().y, 0.1f, 100.0f);
+    shader.setVec3("lightColor",  1.0f, 1.0f, 1.0f);
+    // commented in favor of texture color
+    //shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
     shader.setMat4("projection", projection);
     shader.setMat4("view", view);
     shader.setMat4("model", model);
+    shader.setVec3("lightPos", lightPos); // muss beim Ändern des models mitgeändert werden (transform settings)
+    shader.setVec3("viewPos", camera->Position);
+
+    Shader lightingShader = ShaderManager::GetShader(1);
+    lightingShader.use();
+    if(dontUpdate){
+        /*** light cube ***/
+        lightCubeModel = glm::translate(lightCubeModel, lightPos);
+        lightCubeModel = glm::scale(lightCubeModel, glm::vec3(0.2f));
+        lightingShader.setMat4("model", lightCubeModel);
+        dontUpdate = false;
+    }
+    lightingShader.setMat4("projection", projection);
+    lightingShader.setMat4("view", view);
 }
 
 void OpenGLWrapper::AutoRotateObject(bool rotate) {
@@ -222,7 +257,14 @@ void OpenGLWrapper::FramebufferSizeCallback(GLFWwindow* window, int width, int h
 
 void OpenGLWrapper::Draw() {
     // render box
+    Shader shader = ShaderManager::GetShader(0);
+    shader.use();
     glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    Shader lightCubeShader = ShaderManager::GetShader(1);
+    lightCubeShader.use();
+    glBindVertexArray(lightCubeVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
@@ -230,6 +272,7 @@ void OpenGLWrapper::Cleanup() {
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &lightCubeVAO);
     glDeleteBuffers(1, &VBO);
 }
 
