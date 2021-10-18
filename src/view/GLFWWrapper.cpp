@@ -7,6 +7,7 @@
 #include <excpetions/GLFWException.h>
 #include <view/OpenGLWrapper.h>
 #include <boost/bind/bind.hpp>
+#include <glfw/glfw3.h>
 
 using namespace View;
 

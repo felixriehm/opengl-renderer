@@ -4,15 +4,19 @@
 
 #ifndef OPENGL_RENDERER_IMGUIWRAPPER_H
 #define OPENGL_RENDERER_IMGUIWRAPPER_H
-#include <view/GLFWWrapper.h>
-#include <view/OpenGLWrapper.h>
 #include <imgui.h>
+
+class Scene;
+namespace View
+{
+    class GLFWWrapper;
+}
 
 namespace View {
     class ImGuiWrapper {
         private:
-            GLFWWrapper* glfwWrapper;
-            OpenGLWrapper* openGlWrapper;
+            View::GLFWWrapper* glfwWrapper;
+            Scene* scene;
             void ShowTextureSettings(bool* p_open);
             void ShowExampleAppSimpleOverlay(bool* p_open);
             void ShowTransformSettings(bool* p_open);
@@ -21,7 +25,7 @@ namespace View {
             bool showTextureSettings = false;
             bool showExampleAppSimpleOverlay = true;
         public:
-            ImGuiWrapper(GLFWWrapper* glfwWrapper, OpenGLWrapper* openGlWrapper);
+            ImGuiWrapper(View::GLFWWrapper* glfwWrapper, Scene* scene);
             bool WantCaptureMouse();
             bool WantCaptureKeyboard();
             void Init();

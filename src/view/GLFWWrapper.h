@@ -4,9 +4,10 @@
 
 #ifndef OPENGL_RENDERER_GLFWWRAPPER_H
 #define OPENGL_RENDERER_GLFWWRAPPER_H
-#include <glfw/glfw3.h>
 #include <glm/glm.hpp>
 #include <boost/signals2/signal.hpp>
+
+struct GLFWwindow;
 
 namespace View {
     class GLFWWrapper {

@@ -10,16 +10,21 @@
 #include <excpetions/GLEWException.h>
 #include <iostream>
 #include <vector>
-#include <camera/Camera.h>
 #include <user_input/UserInput.h>
+#include <utility/filesystem.h>
+#include <scene/Scene.h>
+#include <stb_image.h>
+#include <glfw/glfw3.h>
+#include <texture/Texture.h>
 
 using namespace View;
 
 void Gui::Run() {
     GLFWWrapper* glfwWrapper = new GLFWWrapper();
     Camera* camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f));
-    OpenGLWrapper* openGl = new OpenGLWrapper(glfwWrapper, camera);
-    ImGuiWrapper* imGuiWrapper = new ImGuiWrapper(glfwWrapper, openGl);
+    Scene* scene = new Scene();
+    OpenGLWrapper* openGl = new OpenGLWrapper(glfwWrapper);
+    ImGuiWrapper* imGuiWrapper = new ImGuiWrapper(glfwWrapper, scene);
     UserInput* userInput = new UserInput(glfwWrapper, camera, imGuiWrapper);
 
     try {
@@ -37,62 +42,46 @@ void Gui::Run() {
         throw;
     }
 
-    std::vector<std::string> vsPaths = {"src/shader/main.vs", "src/shader/light.vs"};
-    std::vector<std::string> fsPaths = {"src/shader/main.fs", "src/shader/light.fs"};
-    openGl->BuildAndCompileShaderProgram(vsPaths,fsPaths);
-
-    // load vertices
+    Texture* tex1 = new Texture();
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+    unsigned char *data = stbi_load(FileSystem::getPath("assets/textures/container.jpg").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
     {
-        const std::vector<float> vertices {
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f,  0.0f, -1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  0.0f, -1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,  0.0f, -1.0f,
-
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 0.0f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, -1.0f,  0.0f,  0.0f,
-
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,  0.0f,  0.0f,
-
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 0.0f, -1.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, -1.0f,  0.0f,
-
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 0.0f,  1.0f,  0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,  1.0f,  0.0f
-        };
-        openGl->SetupVerticeData(vertices);
+        tex1->Generate(width,height,data);
     }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
 
-    std::string texturePaths[2] = {"assets/textures/container.jpg", "assets/textures/awesomeface.png"};
-    openGl->LoadAndCreateTextures(texturePaths);
+    Texture* tex2 = new Texture();
+    tex2->Internal_Format = GL_RGBA;
+    tex2->Image_Format = GL_RGBA;
+    data = stbi_load(FileSystem::getPath("assets/textures/awesomeface.png").c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        tex2->Generate(width,height,data);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    std::vector<Texture*> textures = {tex1, tex2};
 
-    //openGl->CreateTransformationsInit();
+
+    Shader* cubeShader = new Shader(FileSystem::getPath("src/shader/main.vs").c_str(), FileSystem::getPath("src/shader/main.fs").c_str());
+    Shader* lightShader = new Shader(FileSystem::getPath("src/shader/light.vs").c_str(), FileSystem::getPath("src/shader/light.fs").c_str());
+    CubeRenderer* cubeRenderer = new CubeRenderer(cubeShader, textures, scene, glfwWrapper);
+    LightRenderer* lightRenderer = new LightRenderer(lightShader, scene, glfwWrapper);
+    Cube* cube = new Cube(glm::vec3(0.0f, 0.0f, 0.0f), cubeRenderer);
+    Light* lightSource = new Light(glm::vec3(1.2f, 1.0f, 2.0f), lightRenderer);
+    lightSource->Scale(glm::vec3(0.2f));
+    scene->AddEntity(cube);
+    scene->AddLight(lightSource);
+    scene->SetCamera(camera);
 
     // render loop
     // -----------
@@ -106,16 +95,15 @@ void Gui::Run() {
 
         openGl->ClearCanvas();
 
-        openGl->CreateTransformations(deltaTime);
-
-        openGl->Draw();
+        scene->Draw(deltaTime);
 
         imGuiWrapper->RenderImGui();
 
         glfwWrapper->SwapBuffersAndPollIOEvents();
     }
 
-    openGl->Cleanup();
+    cubeRenderer->Cleanup();
+    lightRenderer->Cleanup();
     imGuiWrapper->Cleanup();
     glfwWrapper->Cleanup();
 }

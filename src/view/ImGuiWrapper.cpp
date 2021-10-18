@@ -6,12 +6,15 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <cmath>
+#include <view/GLFWWrapper.h>
+#include <scene/Scene.h>
+#include <texture/Texture.h>
 
 using namespace View;
 
-ImGuiWrapper::ImGuiWrapper(GLFWWrapper* glfwWrapper, OpenGLWrapper* openGlWrapper) {
+ImGuiWrapper::ImGuiWrapper(View::GLFWWrapper* glfwWrapper, Scene* scene) {
     this->glfwWrapper = glfwWrapper;
-    this->openGlWrapper = openGlWrapper;
+    this->scene = scene;
 }
 
 void ImGuiWrapper::Init(){
@@ -74,7 +77,7 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
 
     static bool rotate = true;
     if(ImGui::Checkbox("Auto rotate object", &rotate)){
-        openGlWrapper->AutoRotateObject(rotate);
+        scene->GetEntities().at(0)->SetAutoRotate(rotate);
     }
 
     ImGui::Spacing();
@@ -88,9 +91,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     static float counter = 0;
     float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
     ImGui::PushButtonRepeat(true);
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(0, -0.05f); counter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(-0.05f,0.0f,0.0f)); counter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(0, 0.05); counter += 0.05f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(0.05f,0.0f,0.0f)); counter += 0.05f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", counter);
 
@@ -99,9 +102,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float ycounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(1, -0.05f); ycounter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(0.0f,-0.05f,0.0f)); ycounter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(1, 0.05); ycounter += 0.05f; };
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(0.0f,0.05f,0.0f)); ycounter += 0.05f; };
     ImGui::SameLine();
     ImGui::Text("%.2f", ycounter);
 
@@ -110,9 +113,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float zcounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->TranslateObject(2, -0.05f); zcounter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(0.0f,0.0f,-0.05f)); zcounter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->TranslateObject(2, 0.05); zcounter += 0.05f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->MoveTo(glm::vec3(0.0f,0.0f,0.05f)); zcounter += 0.05f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", zcounter);
 
@@ -125,9 +128,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float rxcounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(0, -1.0f); rxcounter -= 1.0f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Rotate(-1.0f, glm::vec3(1,0,0)); rxcounter -= 1.0f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(0, 1.0f); rxcounter += 1.0f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Rotate(1.0f, glm::vec3(1,0,0)); rxcounter += 1.0f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", rxcounter);
 
@@ -136,9 +139,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float yrcounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(1, -1.0f); yrcounter -= 1.0f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Rotate(-1.0f, glm::vec3(0,1,0)); yrcounter -= 1.0f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(1, 1.0f); yrcounter += 1.0f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Rotate(1.0f, glm::vec3(0,1,0)); yrcounter += 1.0f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", yrcounter);
 
@@ -147,9 +150,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float zrcounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->RotateObject(2, -1.0f); zrcounter -= 1.0f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Rotate(-1.0f, glm::vec3(0,0,1)); zrcounter -= 1.0f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->RotateObject(2, 1.0f); zrcounter += 1.0f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Rotate(1.0f, glm::vec3(0,0,1)); zrcounter += 1.0f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", zrcounter);
 
@@ -162,9 +165,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float sxcounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(0, 0.95f); sxcounter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Scale(glm::vec3(0.95f,1,1)); sxcounter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(0, 1.05); sxcounter += 0.05f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Scale(glm::vec3(1.05f,1,1)); sxcounter += 0.05f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", sxcounter);
 
@@ -173,9 +176,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float yscounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(1, 0.95f); yscounter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Scale(glm::vec3(1, 0.95f,1)); yscounter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(1, 1.05); yscounter += 0.05f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Scale(glm::vec3(1, 1.05f,1)); yscounter += 0.05f; }
     ImGui::SameLine();
     ImGui::Text("%.2f", yscounter);
 
@@ -184,9 +187,9 @@ void ImGuiWrapper::ShowTransformSettings(bool* p_open){
     ImGui::SameLine();
     // Arrow buttons with Repeater
     static float zscounter = 0;
-    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { openGlWrapper->ScaleObject(2, 0.95f); zscounter -= 0.05f; }
+    if (ImGui::ArrowButton("##left", ImGuiDir_Left)) { scene->GetEntities().at(0)->Scale(glm::vec3(1,1,0.95f)); zscounter -= 0.05f; }
     ImGui::SameLine(0.0f, spacing);
-    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { openGlWrapper->ScaleObject(2, 1.05); zscounter += 0.05f; }
+    if (ImGui::ArrowButton("##right", ImGuiDir_Right)) { scene->GetEntities().at(0)->Scale(glm::vec3(1,1,1.05f)); zscounter += 0.05f; }
     ImGui::PopButtonRepeat();
     ImGui::SameLine();
     ImGui::Text("%.2f", zscounter);
@@ -216,10 +219,10 @@ void ImGuiWrapper::ShowTextureSettings(bool* p_open){
     static float xSlider = 1.0f;
     static float ySlider = 1.0f;
     if(ImGui::SliderFloat("x", &xSlider, 0.0f, 7.0f, "%.2f", flags)){
-        openGlWrapper->ScaleTextCoord(0, xSlider);
+        scene->GetEntities().at(0)->GetRenderer()->ScaleTextCoord(0, xSlider);
     }
     if(ImGui::SliderFloat("y", &ySlider, 0.0f, 7.0f, "%.2f", flags)){
-        openGlWrapper->ScaleTextCoord(1, ySlider);
+        scene->GetEntities().at(0)->GetRenderer()->ScaleTextCoord(1, xSlider);
     }
 
     ImGui::Spacing();
@@ -234,7 +237,8 @@ void ImGuiWrapper::ShowTextureSettings(bool* p_open){
             const bool is_selected = (item_current_idx == n);
             if (ImGui::Selectable(items[n], is_selected)){
                 item_current_idx = n;
-                openGlWrapper->SetTextureWrapping(item_current_idx);
+                scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(0)->SetTextureWrapping(item_current_idx);
+                scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(1)->SetTextureWrapping(item_current_idx);
             }
 
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -255,7 +259,8 @@ void ImGuiWrapper::ShowTextureSettings(bool* p_open){
 
         if(ImGui::ColorEdit3("Border color", (float*)&color, misc_flags)){
             float arrayColor[] = {color.x,color.y,color.z,color.w};
-            openGlWrapper->SetTextureWrappingBorderColor(arrayColor);
+            scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(0)->SetTextureWrappingBorderColor(arrayColor);
+            scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(1)->SetTextureWrappingBorderColor(arrayColor);
         }
         ImGui::SameLine(); HelpMarker(
                 "Click on the color square to open a color picker.\n"
@@ -274,7 +279,8 @@ void ImGuiWrapper::ShowTextureSettings(bool* p_open){
             const bool is_selected = (textureFilteringItem_current_idx == n);
             if (ImGui::Selectable(textureFilteringItems[n], is_selected)){
                 textureFilteringItem_current_idx = n;
-                openGlWrapper->SetTextureFiltering(textureFilteringItem_current_idx);
+                scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(0)->SetTextureFiltering(textureFilteringItem_current_idx);
+                scene->GetEntities().at(0)->GetRenderer()->GetTextures().at(1)->SetTextureFiltering(textureFilteringItem_current_idx);
             }
 
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)

@@ -4,6 +4,11 @@
 
 #include "UserInput.h"
 #include <boost/bind/bind.hpp>
+#include <scene/camera/Camera.h>
+#include <view/ImGuiWrapper.h>
+#include <view/GLFWWrapper.h>
+#include <glfw/glfw3.h>
+
 using namespace boost::placeholders;
 
 UserInput::UserInput(View::GLFWWrapper* glfwWrapper, Camera* camera, View::ImGuiWrapper* imGuiWrapper){

@@ -5,7 +5,7 @@
 #ifndef OPENGL_RENDERER_CAMERA_H
 #define OPENGL_RENDERER_CAMERA_H
 
-//#include <glew/glew.h>
+#include <glew/glew.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

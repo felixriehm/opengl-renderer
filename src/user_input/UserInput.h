@@ -5,9 +5,15 @@
 #ifndef OPENGL_RENDERER_USERINPUT_H
 #define OPENGL_RENDERER_USERINPUT_H
 
-#include <view/GLFWWrapper.h>
-#include <camera/Camera.h>
-#include <view/ImGuiWrapper.h>
+namespace View
+{
+    class ImGuiWrapper;
+}
+namespace View
+{
+    class GLFWWrapper;
+}
+class Camera;
 
 class UserInput {
     public:

@@ -23,7 +23,7 @@ link_libraries(opengl32.lib
         glew32.lib
         glfw3.lib)
 
-file(GLOB SOURCE_FILES src/*.cpp src/view/*.cpp src/shader/*.cpp src/user_input/*.cpp src/camera/*.cpp lib/stb_image/src/*.cpp lib/imgui/src/*.cpp)
+file(GLOB SOURCE_FILES src/*.cpp src/view/*.cpp src/shader/*.cpp src/renderer/*.cpp src/texture/*.cpp src/scene/*.cpp src/scene/entity/*.cpp src/user_input/*.cpp src/scene/camera/*.cpp lib/stb_image/src/*.cpp lib/imgui/src/*.cpp)
 
 #add_compile_options(/E ${SOURCE_FILES})
 
